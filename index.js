@@ -258,7 +258,7 @@ class ZipaAccessory {
       .on('get', this.getOnCharacteristicHandler.bind(this));
     }
     if(this.type == "co2"){
-      this.service.getCharacteristic(Characteristic.CarbonMonoxideSensor)
+      this.service.getCharacteristic(Characteristic.CarbonMonoxideDetected)
       .on('get', this.getOnCharacteristicHandler.bind(this));
     }
     if(this.type == "battery"){

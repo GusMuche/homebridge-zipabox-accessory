@@ -71,12 +71,12 @@ I did'nt work with javascript since a few years, so please be comprehensive.
 - [x] Handle reconnection after auto disconnection
 - [x] Change the refresh rate for each Accessory
 - [x] Explain how to find the UUID
-- [ ] Change the name of the package
+- [x] Change the name of the package
 - [ ] Rewrite the parameter order to have something more clear and logic (sub division?)
 - [ ] Make a function with reconnect method
 - [ ] Bind with a graph viewer (like fakegato)
 - [ ] Config to force a device UUID (need ?)
-- [ ] Status active for sensor ?
+- [x] Status active for sensor ?
 - [ ] Check lux scale if correct
 - [ ] Defense prog if batteryLevel requested without battery available ?
 - [ ] Get name with name device ? > first test no concluded > do we need ?
@@ -165,7 +165,7 @@ Door                | door        | Current Position (0 or 100 %) - Unavailable
 Leak Sensor         | leak        | Get Value - Battery Low Status - Unavailable
 Battery             | battery     | Battery Level - Status - Unavailable
 Carbon Monoxide     | co          | Carbon Detected - Battery Low Status - Unavailable
-Security System     | alarm       | Ongoing
+Security System     | alarm       | Ongoing...
 
 ## Remarks
 
