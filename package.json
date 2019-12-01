@@ -1,0 +1,31 @@
+{
+  "name": "homebridge-zipabox-accessory",
+  "version": "0.13.8",
+  "description": "Homebridge plugin for Zipabox for homebridge : http://github.com/GusMuche/homebridge-zipabox-accessory",
+  "license": "MIT",
+  "keywords": [
+    "homebridge-plugin",
+    "homebridge",
+    "test",
+    "Zipato",
+    "Zipabox",
+    "homekit",
+    "apple",
+    "siri"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/GusMuche/homebridge-zipabox-accessory"
+  },
+  "bugs": {
+    "url": "http://github.com/GusMuche/homebridge-zipabox-accessory/issues"
+  },
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
+  },
+  "dependencies": {
+    "fetch-cookie": ">=0.7.3",
+    "node-fetch": ">=2.6.0"
+  }
+}
