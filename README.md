@@ -58,6 +58,8 @@ I did'nt work with javascript since a few years, so please be comprehensive.
 1. index.js - Accessory - CO Sensor > Version 0.12.x
     - [x] Add CO SENSOR
 1. index.js - Accessory - Alarm = Security System > Version 0.13.x
+    - [ ] Clear the API request to have status > /alarm/partitions/{partition}/attributes
+    - [ ] Find the API Put to change Alarm state > ???
     - [ ] Add security aspect and code
 1. index.js - Adapt to platform ? >> Version 1.x
 
