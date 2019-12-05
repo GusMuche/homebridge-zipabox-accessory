@@ -58,8 +58,10 @@ I did'nt work with javascript since a few years, so please be comprehensive.
 1. index.js - Accessory - CO Sensor > Version 0.12.x
     - [x] Add CO SENSOR
 1. index.js - Accessory - Alarm = Security System > Version 0.13.x
-    - [ ] Clear the API request to have status > /alarm/partitions/{partition}/attributes
-    - [ ] Find the API Put to change Alarm state > ???
+    - [x] Clear the API request to have status > /alarm/partitions/{partition}/attributes
+    - [x] Find the API Put to change Alarm state > ???
+    - [x] Add the method to secure Init and Login for Alarm
+    - [ ] Add Async method to connect on Security system
     - [ ] Add security aspect and code
 1. index.js - Adapt to platform ? >> Version 1.x
 
@@ -151,6 +153,7 @@ refresh | (Optional) Time for forced refresh of the status (in seconds)<br>(see 
 batteryLimit | (Optional) Level (in percent 1 to 100) to launch the BatteryLow<br>Status - 0 in default (inactive)
 noStatus | (Optional) = true if no Status (is connected) option is available for<br>the device - false in default - see below-
 reverse | (Optional) = true if the boolean signal of the sensor need to be<br>reversed - see below
+pin | (Optional) : your Pin in Zipato Board to arm or disarm alarm
 
 ## List of implemented function
 Device              | type        | Methods

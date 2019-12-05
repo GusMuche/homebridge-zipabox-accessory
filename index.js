@@ -19,6 +19,7 @@ class ZipaAccessory {
     * config is an object that contains the config for this plugin that was defined the homebridge config.json
     */
 
+    /* Default */
     /* assign both log and config to properties on 'this' class so we can use them in other methods */
     this.log = log;
     this.config = config;
@@ -30,38 +31,50 @@ class ZipaAccessory {
     this.IP = config["server_ip"]; // Change to server_IP > ! config
     this.baseURL = "http://"+this.IP+":8080/zipato-web/v2/"; // Local
     //this.baseURL = "https://my.zipato.com:443/zipato-web/v2/"; // Remote - not tested
+    /* Debug and testValue */
     this.debug = config["debug"] || false;
     this.debug && this.log("Debug ?: " + this.debug);
     this.debug && this.log("URL créée:  " + this.baseURL);
     this.testValue = config["testValue"] || null;
     if(this.testValue != null)
       this.debug && this.log("Test value fixed by user at ", this.testValue);
+    /* UUID of accessory */
     this.uuid = config["uuid"];
     this.uuidB = config["uuidB"] || null;
     if(this.uuiB != null)
       this.debug && this.log("A second Characteristic was added with the uuid",this.uuidB)
+    /* Refresh for timePolling */
     this.timePolling = config["refresh"] || 0;
     if(this.timePolling != 0)
       this.debug && this.log("User request to refresh the value after (seconds)",this.timePolling);
     this.timePolling = this.timePolling * 1000; // turn to milliseconds
+    /* Optional Battery Limit specified */
     this.batteryLimit = config["batteryLimit"] || 0;
     if(this.batteryLimit > 100 || this.batteryLimit < 0 || this.type == "door" || this.type == "window"){
       this.debug && this.log("Configuration error : batteryLimit fixed to 0.");
       this.batteryLimit = 0;
     }
+    /* Optional noStatus to avoid device request */
     this.noStatus = config["noStatus"] || false;
     if(this.noStatus != false && this.noStatus != true){
       this.debug && this.log("Configuration error : noStatus fixed to false");
       this.noStatus = false;
     }
+    /* Optional reverse Value */
     this.reverseValue = config["reverse"] || false;
     if(this.reverseValue != false && this.reverseValue != true){
       this.debug && this.log("Configuration error : reverse fixed to false");
       this.reverseValue = false;
     }
+    /* PIN for alarm accessory */
+    this.pin = config["pin"] || "noPIN";
+    if(this.pin != "noPin")
+      this.debug && this.log("Pin for alarm option are specified");
+
     /* Empty datas */
     this.deviceUUID = null; // will be fixe after connection
     this.timeOut = null; // will be launch after connection
+
     /* Create and connect to the Box */
     this.zipabox = new Zipabox(this.debug,this.baseURL,this.log,config["USERNAME"],config["PASSWORD"]); // tentative de créer la box
     this.connectTheBox();

@@ -42,7 +42,11 @@ class Zipabox{
       fetch(this.baseURL +'user/init', myInitGet)
       .then(fstatus)
       .then(fjson)
-      .then(fgetNonce)
+      .then(function fgetNonce(jsonResponse){
+        return new Promise(function(resolve,reject){
+          resolve(jsonResponse.nonce); // TODO : make a simple return
+        });//end promise
+      })// end function fgetNonce
       .then(function resolveTheNonce(nonce){
         console.log("Resolve the Nonce",nonce)
         resolve(nonce);
@@ -81,6 +85,59 @@ class Zipabox{
       });// end fetch chaining
     }.bind(this)); // end Promise
   } // end connectUser
+
+  initSecurity(){
+    // Init the connection to get the nonce (chain through a Promise)
+    return new Promise(function(resolve, reject) {
+      this.debug && this.log("Methode initSecurity()");
+      this.debug && this.log("URL pour init : " + this.baseURL +'security/session/init');
+      fetch(this.baseURL +'security/session/init', myInitGet)
+      .then(fstatus)
+      .then(fjson)
+      .then(function fixAllInfos(jsonResponse){
+        let secureSessionId = jsonResponse.response.secureSessionId;
+        let nonce = jsonResponse.response.nonce;
+        let salt = jsonResponse.response.salt;
+        resolve([secureSessionId, nonce, salt]);
+      })
+      .catch(function manageError(error) {
+        console.log('Error occurred!', error);// TODO ADD gestion Error
+        reject(error);
+      });// end fetch chaining
+    }.bind(this));// End Promise
+  } // end initSecurity
+
+  connectSecurity([secureSessionId, nonce, salt])){
+    // Request the connection
+    return new Promise(function(resolve,reject){
+      this.debug && this.log("Methode connectSecurity()");
+      this.debug && this.log("secureSessionId for connectSecurity :",secureSessionId;
+      this.debug && this.log("Nonce for connectSecurity :",nonce);
+      this.debug && this.log("Salt for connectSecurity :",salt);
+      // Calculate saltPin
+      if(this.pin == "noPIN")
+        reject("No Pin specified - Connection to security not possible.")
+      var saltPin = salt + this.pin;
+      // Calculate the token
+      var saltPinHash = crypto.createHash('sha1').update(saltPin).digest('hex');
+      this.debug && this.log("saltPinHash :" + saltPinHash);  // todo : BEWARE : will be display also if debug = false
+      this.token = crypto.createHash('sha1').update(nonce + saltPinHash).digest('hex');
+      this.debug && this.log("Token :" + token);
+      this.debug && this.log("URL pour connectSecurity: " + this.baseURL +'security/session/login/'+secureSessionId+'&token='+token);
+      // Connect the Security
+      fetch(this.baseURL +'security/session/login/'+secureSessionId+'&token='+token,myInitGet)
+      .then(fstatus)
+      .then(fjson)
+      .then(function giveResult(jsonReponse){
+        console.log("Result connectSecurity",jsonReponse);
+        console.log("Connection to the connectSecurity : ",jsonReponse.success);
+        resolve(jsonReponse.success);
+      })
+      .catch(function manageError(error) {
+        reject(error);
+      });// end fetch chaining
+    }.bind(this)); // end Promise
+  } // end connectSecurity
 
   getDeviceUUID(attributeUUID){ // return the device UUID
     return new Promise(function(resolve, reject){
