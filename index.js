@@ -60,19 +60,29 @@ class ZipaAccessory {
       this.debug && this.log("Configuration error : noStatus fixed to false");
       this.noStatus = false;
     }
+    if(this.type == "alarm")
+      this.noStatus = true;
     /* Optional reverse Value */
     this.reverseValue = config["reverse"] || false;
     if(this.reverseValue != false && this.reverseValue != true){
       this.debug && this.log("Configuration error : reverse fixed to false");
       this.reverseValue = false;
     }
+    if(this.type == "alarm")
+      this.reverseValue = false;
     /* PIN for alarm accessory */
     this.pin = config["pin"] || "noPIN";
     if(this.pin != "noPin")
       this.debug && this.log("Pin for alarm option are specified");
+    if(this.pin == "noPIN" && this.type== "alarm"){ // Manage missing PIN for alarm
+      this.log("ERROR : The 'pin' parameter must be set to configure an alarm type");
+      this.log("ERROR : type is set to switch to avoid homebridge crash");
+      this.name = this.name + " - MISSING PIN";
+      this.type = "switch";
+    }
 
     /* Empty datas */
-    this.deviceUUID = null; // will be fixe after connection
+    this.deviceUUID = null; // will be fixe after connection TODO : to keep or not ?
     this.timeOut = null; // will be launch after connection
 
     /* Create and connect to the Box */
@@ -170,9 +180,18 @@ class ZipaAccessory {
       return this.zipabox.getDeviceUUID(this.uuid);
     }.bind(this))
     .then(function saveDeviceUUID(deviceUUID){
-        this.debug && this.log("Device UUID found :",deviceUUID);
-        this.deviceUUID = deviceUUID;
-        return("success");
+      this.debug && this.log("Device UUID found :",deviceUUID);
+      this.deviceUUID = deviceUUID;
+      return deviceUUID;
+    }.bind(this))
+    .then(function connectSecurityIfNeeded(deviceUUID){
+      if(this.type == "alarm"){
+        this.debug && this.log("Alarm found after zipa connection > connect to the alarm.")
+        return this.zipabox.initSecurity()
+        .then(this.zipabox.connectSecurity.bind(this.zipabox));
+      }else{
+        return deviceUUID; // same for previous Promise without alarm
+      }
     }.bind(this))
     .catch(function manageError(error) {
       this.log("Error on connectBox : ",error);
@@ -282,9 +301,9 @@ class ZipaAccessory {
     }
     if(this.type == "alarm"){
       this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState)
-      .on('get', this.getOnCharacteristicHandler.bind(this));
+      .on('get', this.getOnSecurityCurrentHandler.bind(this));
       this.service.getCharacteristic(Characteristic.SecuritySystemTargetState)
-      .on('get', this.getOnCharacteristicHandlerB.bind(this));
+      .on('get', this.getOnSecurityTargetHandler.bind(this));
     }
     if(this.batteryLimit != 0){
       this.service.getCharacteristic(Characteristic.StatusLowBattery) // Normal = 0, Low = 1
@@ -589,4 +608,31 @@ class ZipaAccessory {
    	      //throw new Error(error);
        }.bind(this));
   } // end getOnCharacteristicHandlerB
+
+  getOnSecurityCurrentHandler (callback) { // Use for get Alarm status
+       /* Log to the console the value whenever this function is called */
+       this.debug && this.log('calling getOnSecurityCurrentHandler');
+
+       /* Use this block to eventually force a value for test purpose */
+       // if(this.testValue == true){
+       //   callback(null,true);
+       //   return;
+       // }
+       // if(this.testValue == false){
+       //   callback(null,false);
+       //   return;
+       // }
+
+       var error = null;
+       this.zipabox.getSecurityStatus(this.uuid)
+       .then(function manageCallback(securityCurrentState){
+         callback(error,securityCurrentState);
+       }.bind(this))
+       .catch(function manageError(error){
+         //this.log("Test Value in manage Error : ",deviceStatus);
+         this.log("Error on getOnSecurityCurrentHandler :",error);
+         callback(error,undefined);
+          //throw new Error(error);
+       }.bind(this));
+  } // end getOnSecurityCurrentHandler
 } // end Class

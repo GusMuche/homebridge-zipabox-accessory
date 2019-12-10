@@ -120,7 +120,7 @@ class Zipabox{
       var saltPin = salt + this.pin;
       // Calculate the token
       var saltPinHash = crypto.createHash('sha1').update(saltPin).digest('hex');
-      this.debug && this.log("saltPinHash :" + saltPinHash);  // todo : BEWARE : will be display also if debug = false
+      this.debug && this.log("saltPinHash :" + saltPinHash);
       this.token = crypto.createHash('sha1').update(nonce + saltPinHash).digest('hex');
       this.debug && this.log("Token :" + token);
       this.debug && this.log("URL pour connectSecurity: " + this.baseURL +'security/session/login/'+secureSessionId+'&token='+token);
@@ -244,6 +244,42 @@ class Zipabox{
       });// end fetch chaining
     }.bind(this));// End Promise
   }// End getAttributesValue
+
+  getSecurityStatus(uuidPartition){
+    /* SecuritySystemCurrentState Property - enum of Int in Homebridge :
+    STAY_ARM = 0;
+    AWAY_ARM = 1;
+    NIGHT_ARM = 2;
+    DISARMED = 3;
+    ALARM_TRIGGERED = 4;
+    ----
+    Zipato :
+    "bypassed": false||true,
+    "tripped": false||true,
+    "ready": false||true,
+    "armed": false||true,
+    */
+    return new Promise(function(resolve,reject){
+      this.debug && this.log("Method getSecurityStatus()");
+      this.debg && this.log("getSecurityStatus request : ",this.baseURL + "alarm/partitions/" + uuidPartition + "/zones/statuses");
+      fetch(this.baseURL + 'alarm/partitions/' + uuidPartition + '/zones/statuses',myInitGet)
+      .then(fstatus)
+      .then(fjson)
+      .then(function returnIntStatus(jsonResponse){
+        console.log("Response of getSecurityStatus :", uuidPartition);
+        let byPassed = jsonResponse.bypassed;
+        let tripped = jsonResponse.tripped;
+        let ready = jsonResponse.ready;
+        let armed = jsonResponse.armed;
+    
+        resolve(XXX);
+      })
+      .catch(function manageError(error) {
+        console.log('Error occurred!', error);// TODO ADD gestion Error
+        reject(error);
+      });// end fetch chaining
+    }.bind(this)); // end promise
+  }// End getSecurityStatus
 
   putAttributesValueRequest(uuid,valueBool){
     return new Promise(function(resolve, reject){

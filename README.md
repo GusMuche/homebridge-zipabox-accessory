@@ -61,7 +61,9 @@ I did'nt work with javascript since a few years, so please be comprehensive.
     - [x] Clear the API request to have status > /alarm/partitions/{partition}/attributes
     - [x] Find the API Put to change Alarm state > ???
     - [x] Add the method to secure Init and Login for Alarm
+    - [ ] Test the connection method without Status check > force with test Value
     - [ ] Add Async method to connect on Security system
+    - [ ] Add (or no) the SecuritySystemAlarmType
     - [ ] Add security aspect and code
 1. index.js - Adapt to platform ? >> Version 1.x
 
@@ -153,7 +155,7 @@ refresh | (Optional) Time for forced refresh of the status (in seconds)<br>(see 
 batteryLimit | (Optional) Level (in percent 1 to 100) to launch the BatteryLow<br>Status - 0 in default (inactive)
 noStatus | (Optional) = true if no Status (is connected) option is available for<br>the device - false in default - see below-
 reverse | (Optional) = true if the boolean signal of the sensor need to be<br>reversed - see below
-pin | (Optional) : your Pin in Zipato Board to arm or disarm alarm
+pin | (Optional) : your Pin in Zipato Board to arm or disarm alarm.
 
 ## List of implemented function
 Device              | type        | Methods
@@ -190,11 +192,19 @@ Battery   | BatteryLevel  | ChargingStage
 
 ### Reverse a value
 Some sensor work inverted as HomeKit expect. Example : a motion sensor return true if no motion are detected. If you can't change your sensor return value in his configuration or Zipato configuration, you can add the "reverse = true" parameter to reverse the returned value. Work for all "get" for attributes.
+This option if fixed to false by the plugin for an alarm type.
 
 ### Device Status Unavailable
 In case of unavailable device status you can add the parameter "noStatus": true to ask the plugin to not check the availability of the device. This can happen for wired device to the box (security module).
 It can help if your Status UUID have no Parent device with a "status" option.
+This option is fixed to true by the plugin for an alarm type.
 
 ### Refresh Rate
 HomeKit update the status of your device when you reopen the Home APP. If you want to force a refresh you can use the optional parameter "refresh".
 You do not need this to keep the connection to the Box. The plugin will reconnect if need after a long time without connection.
+
+### Alarm configuration
+To configure an alarm, you must specify the UUID of the partition that you want to follow (not the device or sensor). Also the pin of the user logged in ist necessary to permit access to change the alarm (see next point).
+
+### Pin missing for Alarm
+In case of missing PIN parameter for a Alarm accessory, the plugin send a log warning, change the type to "switch" and add an info in the name.
