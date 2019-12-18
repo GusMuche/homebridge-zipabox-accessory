@@ -27,8 +27,6 @@ class Zipabox{
     this.log = log;
     this.user = user;
     this.password = password;
-    this.nonce = null;
-    this.token = null;
     //this.cookieJar = request.jar(); // Create a new jar Cookie
     //this.zipaRequest = request.defaults({jar: this.cookieJar});
     this.debug && this.log("Zipabox lien : " + this.baseURL);
@@ -62,17 +60,15 @@ class Zipabox{
     // Request the connection
     return new Promise(function(resolve,reject){
       this.debug && this.log("Methode connectUser()");
-      // Keep the Nonce // TODO do we need ?
-      this.nonce = nonce;
-      this.debug && this.log("Nonce for connect :",this.nonce);
+      this.debug && this.log("Nonce for connect :",nonce);
       // Calculate the token
       var passwordHash = crypto.createHash('sha1').update(this.password).digest('hex');
       this.debug && this.log("Password hashed :" + passwordHash);  // todo : BEWARE : will be display also if debug = false
-      this.token = crypto.createHash('sha1').update(this.nonce + passwordHash).digest('hex');
-      this.debug && this.log("Token :" + this.token);
-      this.debug && this.log("URL pour login: " + this.baseURL +'user/login?username='+this.user+'&token='+this.token);
+      var token = crypto.createHash('sha1').update(nonce + passwordHash).digest('hex');
+      this.debug && this.log("Token :" + token);
+      this.debug && this.log("URL pour login: " + this.baseURL +'user/login?username='+this.user+'&token='+token);
       // Login the user
-      fetch(this.baseURL +'user/login?username='+this.user+'&token='+this.token,myInitGet)
+      fetch(this.baseURL +'user/login?username='+this.user+'&token='+token,myInitGet)
       .then(fstatus)
       .then(fjson)
       .then(function giveResult(jsonReponse){
@@ -86,7 +82,7 @@ class Zipabox{
     }.bind(this)); // end Promise
   } // end connectUser
 
-  initSecurity(){
+  initSecurity(pin){
     // Init the connection to get the nonce (chain through a Promise)
     return new Promise(function(resolve, reject) {
       this.debug && this.log("Methode initSecurity()");
@@ -98,7 +94,7 @@ class Zipabox{
         let secureSessionId = jsonResponse.response.secureSessionId;
         let nonce = jsonResponse.response.nonce;
         let salt = jsonResponse.response.salt;
-        resolve([secureSessionId, nonce, salt]);
+        resolve([secureSessionId, nonce, salt, pin]);
       })
       .catch(function manageError(error) {
         console.log('Error occurred!', error);// TODO ADD gestion Error
@@ -107,30 +103,32 @@ class Zipabox{
     }.bind(this));// End Promise
   } // end initSecurity
 
-  connectSecurity([secureSessionId, nonce, salt])){
+  connectSecurity([secureSessionId, nonce, salt, pin]){
     // Request the connection
     return new Promise(function(resolve,reject){
       this.debug && this.log("Methode connectSecurity()");
-      this.debug && this.log("secureSessionId for connectSecurity :",secureSessionId;
+      this.debug && this.log("secureSessionId for connectSecurity :",secureSessionId);
       this.debug && this.log("Nonce for connectSecurity :",nonce);
       this.debug && this.log("Salt for connectSecurity :",salt);
       // Calculate saltPin
-      if(this.pin == "noPIN")
+      if(pin == "noPIN")
         reject("No Pin specified - Connection to security not possible.")
-      var saltPin = salt + this.pin;
+      var saltPin = salt + pin;
+      this.debug && this.log("saltPin :" + saltPin);
       // Calculate the token
       var saltPinHash = crypto.createHash('sha1').update(saltPin).digest('hex');
       this.debug && this.log("saltPinHash :" + saltPinHash);
-      this.token = crypto.createHash('sha1').update(nonce + saltPinHash).digest('hex');
+      var token = crypto.createHash('sha1').update(nonce + saltPinHash).digest('hex');
       this.debug && this.log("Token :" + token);
-      this.debug && this.log("URL pour connectSecurity: " + this.baseURL +'security/session/login/'+secureSessionId+'&token='+token);
+      this.debug && this.log("URL pour connectSecurity: " + this.baseURL +'security/session/login/'+secureSessionId+'?token='+token);
       // Connect the Security
-      fetch(this.baseURL +'security/session/login/'+secureSessionId+'&token='+token,myInitGet)
+      fetch(this.baseURL +'security/session/login/'+secureSessionId+'?token='+token,myInitGet)
       .then(fstatus)
       .then(fjson)
       .then(function giveResult(jsonReponse){
         console.log("Result connectSecurity",jsonReponse);
-        console.log("Connection to the connectSecurity : ",jsonReponse.success);
+        console.log("Request to the connectSecurity : ",jsonReponse.success);
+        console.log("Connection to the connectSecurity : ",jsonReponse.response.success);
         resolve(jsonReponse.success);
       })
       .catch(function manageError(error) {
@@ -247,32 +245,42 @@ class Zipabox{
 
   getSecurityStatus(uuidPartition){
     /* SecuritySystemCurrentState Property - enum of Int in Homebridge :
-    STAY_ARM = 0;
-    AWAY_ARM = 1;
-    NIGHT_ARM = 2;
-    DISARMED = 3;
-    ALARM_TRIGGERED = 4;
+    STAY_ARM = 0; > Armée présent
+    AWAY_ARM = 1; > Armée absent
+    NIGHT_ARM = 2; > Armée nuit
+    DISARMED = 3; > Désarmée
+    ALARM_TRIGGERED = 4; > zone
     ----
     Zipato :
-    "bypassed": false||true,
-    "tripped": false||true,
-    "ready": false||true,
-    "armed": false||true,
+      armMode :
+        DISARMED -> Désarmé >> 3
+        AWAY -> Armement total >> 1
+        HOME -> Armement partiel >> 0 ou 2
+      tripped :
+        true || false >> 4 if true
     */
     return new Promise(function(resolve,reject){
       this.debug && this.log("Method getSecurityStatus()");
-      this.debg && this.log("getSecurityStatus request : ",this.baseURL + "alarm/partitions/" + uuidPartition + "/zones/statuses");
-      fetch(this.baseURL + 'alarm/partitions/' + uuidPartition + '/zones/statuses',myInitGet)
+      this.debg && this.log("getSecurityStatus request : ",this.baseURL + "alarm/partitions/" + uuidPartition + "?alarm=false&zones=false&control=false&attributes=false&config=false&state=true&full=false");
+      fetch(this.baseURL + "alarm/partitions/" + uuidPartition + "?alarm=false&zones=false&control=false&attributes=false&config=false&state=true&full=false",myInitGet)
       .then(fstatus)
       .then(fjson)
       .then(function returnIntStatus(jsonResponse){
         console.log("Response of getSecurityStatus :", uuidPartition);
-        let byPassed = jsonResponse.bypassed;
-        let tripped = jsonResponse.tripped;
-        let ready = jsonResponse.ready;
-        let armed = jsonResponse.armed;
-    
-        resolve(XXX);
+        let armMode = jsonResponse.state.armMode;
+        let tripped = jsonResponse.state.tripped;
+        console.log("armMode :",armMode);
+        console.log("tripped :",tripped);
+        // console.log("Test force error on connection");
+        // var err = new Error("Unauthorized");
+        // reject(err);
+        if(armMode == "HOME")
+          resolve(0); // STAY_ARM
+        if(armMode == "AWAY")
+          resolve(1); // AWAY_ARM
+        if(armMode == "DISARMED")
+          resolve(3); // DISARMED
+        reject("Bad return > no status find for this partition.");
       })
       .catch(function manageError(error) {
         console.log('Error occurred!', error);// TODO ADD gestion Error

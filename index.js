@@ -175,19 +175,24 @@ class ZipaAccessory {
     //     } // end if-else
     //   }.bind(this)) // end Promise
     // }.bind(this)) // end then function
-    .then(function askTheDeviceUUID(connectionResponseOrDeviceName){
-      this.debug && this.log("deviceName or connectionResponse :",connectionResponseOrDeviceName);
-      return this.zipabox.getDeviceUUID(this.uuid);
+    .then(function manageDeviceUUID(connectionResponseOrDeviceName){
+      return new Promise(function (resolve,reject){
+        if(this.noStatus == true){ // no device Status available > return simple uuid
+          resolve(this.uuid);
+        }else{
+          this.zipabox.getDeviceUUID(this.uuid)
+          .then(function saveDeviceUUID(deviceUUID){
+            this.debug && this.log("Device UUID found :",deviceUUID);
+            this.deviceUUID = deviceUUID;
+            resolve(deviceUUID);
+          }.bind(this));
+        }
+      }.bind(this)); // end returned Promise
     }.bind(this))
-    .then(function saveDeviceUUID(deviceUUID){
-      this.debug && this.log("Device UUID found :",deviceUUID);
-      this.deviceUUID = deviceUUID;
-      return deviceUUID;
-    }.bind(this))
-    .then(function connectSecurityIfNeeded(deviceUUID){
+    .then(function connectSecurityIfNeeded(deviceUUIDorUUID){
       if(this.type == "alarm"){
         this.debug && this.log("Alarm found after zipa connection > connect to the alarm.")
-        return this.zipabox.initSecurity()
+        return this.zipabox.initSecurity(this.pin)
         .then(this.zipabox.connectSecurity.bind(this.zipabox));
       }else{
         return deviceUUID; // same for previous Promise without alarm
@@ -227,7 +232,7 @@ class ZipaAccessory {
       }
       if(this.type == "alarm"){
         this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState).getValue();
-        this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).getValue();
+        //this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).getValue();
       }
       this.statusPolling();
     }.bind(this),this.timePolling)// end function of timeout
@@ -302,8 +307,8 @@ class ZipaAccessory {
     if(this.type == "alarm"){
       this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState)
       .on('get', this.getOnSecurityCurrentHandler.bind(this));
-      this.service.getCharacteristic(Characteristic.SecuritySystemTargetState)
-      .on('get', this.getOnSecurityTargetHandler.bind(this));
+      // this.service.getCharacteristic(Characteristic.SecuritySystemTargetState)
+      // .on('get', this.getOnSecurityTargetHandler.bind(this));
     }
     if(this.batteryLimit != 0){
       this.service.getCharacteristic(Characteristic.StatusLowBattery) // Normal = 0, Low = 1
@@ -568,12 +573,8 @@ class ZipaAccessory {
        this.debug && this.log('calling getOnCharacteristicHandlerB');
 
        /* Use this block to eventually force a value for test purpose */
-       // if(this.testValue == true){
-       //   callback(null,true);
-       //   return;
-       // }
-       // if(this.testValue == false){
-       //   callback(null,false);
+       // if(this.testValue != null){
+       //   callback(null,0);
        //   return;
        // }
 
@@ -614,17 +615,33 @@ class ZipaAccessory {
        this.debug && this.log('calling getOnSecurityCurrentHandler');
 
        /* Use this block to eventually force a value for test purpose */
-       // if(this.testValue == true){
-       //   callback(null,true);
-       //   return;
-       // }
-       // if(this.testValue == false){
-       //   callback(null,false);
+       // if(this.testValue != null){
+       //   callback(null,this.testValue);
        //   return;
        // }
 
        var error = null;
        this.zipabox.getSecurityStatus(this.uuid)
+       .catch(function manageReconnection(errorConnection){
+         if (errorConnection.message == "Unauthorized" || errorConnection.message == "Unauthorized "){ // || error.message == "Bad Request " > for test
+           this.log("Found Unauthorized error in security Status > need reconnection : ", "-"+ errorConnection.message + "-");
+           /* Try to reconnect the Box */
+           return this.connectTheBox()
+           .then(function checkStatus(connectionAnswer){
+             if(connectionAnswer != "success"){
+               this.log("Reconnection failed. Error :",error)
+               throw error;
+               //return ("testErrorChaining"); // For test with chaining after error
+             }else{
+               this.debug && this.log("Reconnection success > getOnSecurityCurrentHandler");
+               return this.zipabox.getSecurityStatus(this.uuid); // regive the security value
+             }
+           }.bind(this)) // End Unauthorized error manage
+           .catch(function manageError(error){
+         	    throw new Error(error);
+           });
+         }
+       }.bind(this))
        .then(function manageCallback(securityCurrentState){
          callback(error,securityCurrentState);
        }.bind(this))

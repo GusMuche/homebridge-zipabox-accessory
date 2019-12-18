@@ -61,8 +61,11 @@ I did'nt work with javascript since a few years, so please be comprehensive.
     - [x] Clear the API request to have status > /alarm/partitions/{partition}/attributes
     - [x] Find the API Put to change Alarm state > ???
     - [x] Add the method to secure Init and Login for Alarm
-    - [ ] Test the connection method without Status check > force with test Value
-    - [ ] Add Async method to connect on Security system
+    - [x] Test the connection method without Status check > force with test Value
+    - [x] Add Async method to connect on Security system
+    - [x] Add resync if missing connection > need test
+    - [x] Add Async method to get System status
+    - [ ] Add method to set the mode
     - [ ] Add (or no) the SecuritySystemAlarmType
     - [ ] Add security aspect and code
 1. index.js - Adapt to platform ? >> Version 1.x
@@ -90,6 +93,7 @@ I did'nt work with javascript since a few years, so please be comprehensive.
 - [ ] Adapt from accessory to platform > check if need (actual multiple connection)
 - [ ] Implementation of Outlet In Use Status > if needed
 - [ ] Add Smoke Sensor > if needed
+- [ ] Manage possibility to have night mode with an alarm
 
 ### Not Implemented Accessory (cause I'm not using them)
 - Doorbell
