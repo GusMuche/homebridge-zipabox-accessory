@@ -7,9 +7,9 @@ The approach is to add multiple accessory and get the base information and actio
 
 The plugin will be adapted to a Platform after programming all the accessory separately (see development route below).
 
-The plugin didn't use the [Zipato API](https://github.com/espenmjos/zipato) (no success after a few try) like the [homebridge-zipato](https://github.com/lrozema/homebridge-zipato) plugin. The actual plugin is an alternative.
+The plugin didn't use the [Zipato API Node.js Implementation](https://github.com/espenmjos/zipato) (no success after a few try) like the [homebridge-zipato](https://github.com/lrozema/homebridge-zipato) plugin. The actual plugin is an alternative with direct connection to [Zipato API] (https://my.zipato.com/zipato-web/api/).
 
-I did'nt work with javascript since a few years, so please be comprehensive.
+I didn't work with javascript since a few years, so please be comprehensive.
 
 ## Development route
 1. NPM diffusion
