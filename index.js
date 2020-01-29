@@ -80,6 +80,8 @@ class ZipaAccessory {
       this.name = this.name + " - MISSING PIN";
       this.type = "switch";
     }
+    /* Get other option on log */
+    this.debug && this.log("Status noStatus : ",this.noStatus);
 
     /* Empty datas */
     this.deviceUUID = null; // will be fixe after connection TODO : to keep or not ?
