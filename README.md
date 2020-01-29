@@ -68,6 +68,7 @@ I didn't work with javascript since a few years, so please be comprehensive.
     - [ ] Add method to set the mode
     - [ ] Add (or no) the SecuritySystemAlarmType
     - [ ] Add security aspect and code
+    - [ ] Add possibility to select Night mode in place of Away mode
 1. index.js - Adapt to platform ? >> Version 1.x
 
 ### Further To-do List
@@ -81,6 +82,7 @@ I didn't work with javascript since a few years, so please be comprehensive.
 - [x] Change the refresh rate for each Accessory
 - [x] Explain how to find the UUID
 - [x] Change the name of the package
+- [ ] Add a fake switch to reboot the box ?
 - [ ] Rewrite the parameter order to have something more clear and logic (sub division?)
 - [ ] Make a function with reconnect method
 - [ ] Bind with a graph viewer (like fakegato)
