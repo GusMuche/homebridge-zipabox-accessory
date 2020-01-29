@@ -309,8 +309,8 @@ class ZipaAccessory {
     if(this.type == "alarm"){
       this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState)
       .on('get', this.getOnSecurityCurrentHandler.bind(this));
-      // this.service.getCharacteristic(Characteristic.SecuritySystemTargetState)
-      // .on('get', this.getOnSecurityTargetHandler.bind(this));
+      this.service.getCharacteristic(Characteristic.SecuritySystemTargetState)
+      .on('set', this.setOnSecurityTargetHandler.bind(this));
     }
     if(this.batteryLimit != 0){
       this.service.getCharacteristic(Characteristic.StatusLowBattery) // Normal = 0, Low = 1
@@ -654,4 +654,18 @@ class ZipaAccessory {
           //throw new Error(error);
        }.bind(this));
   } // end getOnSecurityCurrentHandler
+
+  setOnSecurityTargetHandler (value, callback){ // set method for alarm Type (SecuritySystem)
+    /* Log to the console the value whenever this function is called */
+    this.debug && this.log('calling setOnCharacteristicHandler', value);
+
+    this.zipabox.putSecuritySystem(this.uuid,value)
+    .then(function launchCallBack(resp){
+      //console.log("launchCallBack :",resp); // TODO: delete
+      callback(resp); // TODO : check if ok
+    })
+    .catch(function manageError(error) {
+      throw new Error(error);
+    });
+  }
 } // end Class

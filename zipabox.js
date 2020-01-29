@@ -29,6 +29,7 @@ class Zipabox{
     this.password = password;
     //this.cookieJar = request.jar(); // Create a new jar Cookie
     //this.zipaRequest = request.defaults({jar: this.cookieJar});
+    this.secureSessionId = null;
     this.debug && this.log("Zipabox lien : " + this.baseURL);
   }
 
@@ -121,6 +122,8 @@ class Zipabox{
       var token = crypto.createHash('sha1').update(nonce + saltPinHash).digest('hex');
       this.debug && this.log("Token :" + token);
       this.debug && this.log("URL pour connectSecurity: " + this.baseURL +'security/session/login/'+secureSessionId+'?token='+token);
+      // Save secureSessionId for use in putSecuritySystem
+      this.secureSessionId = secureSessionId;
       // Connect the Security
       fetch(this.baseURL +'security/session/login/'+secureSessionId+'?token='+token,myInitGet)
       .then(fstatus)
@@ -266,17 +269,18 @@ class Zipabox{
       .then(fstatus)
       .then(fjson)
       .then(function returnIntStatus(jsonResponse){
-        console.log("Response of getSecurityStatus :", uuidPartition);
         let armMode = jsonResponse.state.armMode;
         let tripped = jsonResponse.state.tripped;
-        console.log("armMode :",armMode);
-        console.log("tripped :",tripped);
-        console.log("Type of tripped :",typeof(tripped));
+        // console.log("Response of getSecurityStatus :", uuidPartition);
+        // console.log("armMode :",armMode);
+        // console.log("tripped :",tripped);
+        // console.log("Type of tripped :",typeof(tripped));
+
         // console.log("Test force error on connection");
         // var err = new Error("Unauthorized");
         // reject(err);
         if(tripped == true)
-            resolve(4);
+          resolve(4);
         if(armMode == "HOME")
           resolve(0); // STAY_ARM
         if(armMode == "AWAY")
@@ -291,6 +295,50 @@ class Zipabox{
       });// end fetch chaining
     }.bind(this)); // end promise
   }// End getSecurityStatus
+
+  putSecuritySystem(uuidPartition,valueInt){
+    /* Change the targetState of the security System requested
+    valueInt is normally :
+      STAY_ARM = 0; > Armée présent
+      AWAY_ARM = 1; > Armée absent
+      NIGHT_ARM = 2; > Armée nuit
+      DISARMED = 3; > Désarmée
+    */
+    return new Promise(function(resolve,reject){
+      this.debug && this.log("Method putSecuritySystem() - secureSessionId : ",this.secureSessionId);
+      this.debug && this.log("uuidPartition :",uuidPartition);
+      this.debug && this.log("valueInt :",valueInt);
+      if(this.secureSessionId == null)
+        reject("No secureSessionId saved in Object !");
+      // Translate armMode from INT of HomeKit to String for Zipato
+      var armMode = "error";
+      if(valueInt == 0)
+        armMode = "HOME";
+      if(valueInt == 1 || valueInt == 2)
+        armMode = "AWAY";
+      if(valueInt == 3)
+        armMode = "DISARMED"
+      if(armMode == "error")
+        reject("No armMode selected. valueInt : "+valueInt);
+      var myBody = '{"armMode" : "'+armMode+'","secureSessionId":"'+this.secureSessionId'"}';
+      var myInitPost = {
+        method: 'POST',
+        body: myBody
+      }
+      this.debug && this.log("myInitPost:",myInitPost);
+      this.debug && this.log("URL:",this.baseURL + 'alarm/partitions/' + uuidPartition + '/setMode');
+      fetch(this.baseURL + 'alarm/partitions/' + uuidPartition + '/setMode',myInitPost)
+      .then(fstatus)
+      .then(function giveResponse(response){
+        console.log("Response of POST : ",response)
+        resolve(null);
+      })
+      .catch(function manageError(error) {
+        console.log('Error occurred!', error);// TODO ADD gestion Error
+        reject(error);
+      });// end fetch chaining
+    }.bind(this)); // end Promise
+  } // end putSecuritySystem
 
   putAttributesValueRequest(uuid,valueBool){
     return new Promise(function(resolve, reject){
@@ -313,6 +361,8 @@ class Zipabox{
       });// end fetch chaining
     }.bind(this));// End Promise
   }// end setAttributesValueRequest
+
+  
 } // End class
 
 
