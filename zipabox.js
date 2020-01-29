@@ -271,11 +271,12 @@ class Zipabox{
         let tripped = jsonResponse.state.tripped;
         console.log("armMode :",armMode);
         console.log("tripped :",tripped);
+        console.log("Type of tripped :",typeof(tripped));
         // console.log("Test force error on connection");
         // var err = new Error("Unauthorized");
         // reject(err);
-        if(tripped == "true")
-          resolve(4);
+        if(tripped == true)
+            resolve(4);
         if(armMode == "HOME")
           resolve(0); // STAY_ARM
         if(armMode == "AWAY")
