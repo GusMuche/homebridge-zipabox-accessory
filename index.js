@@ -664,12 +664,9 @@ class ZipaAccessory {
       //console.log("launchCallBack :",resp); // TODO: delete
       callback(resp); // TODO : check if ok
     })
-    .then(function recheckStatusIfNoRefresh(notUsed){
-      console.log("NotUsed :",notUsed);
-      if(this.timePolling == 0){ // User has no request to check alarm refresh > force get Status after change
+    .then(function recheckStatusIfNoRefresh(){
+      if(this.timePolling == 0) // User has no request to check alarm refresh > force get Status after change
         this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState).getValue();
-        console.log("Refresh asked");
-      }
     }.bind(this))
     .catch(function manageError(error) {
       throw new Error(error);

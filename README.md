@@ -65,10 +65,10 @@ I didn't work with javascript since a few years, so please be comprehensive.
     - [x] Add Async method to connect on Security system
     - [x] Add resync if missing connection > need test
     - [x] Add Async method to get System status
-    - [ ] Add method to set the mode
+    - [x] Add method to set the mode
+    - [ ] Manage return if No connection successfull > StatusTampered or StatusFault
     - [ ] Add (or no) the SecuritySystemAlarmType
-    - [ ] Add security aspect and code
-    - [ ] Add possibility to select Night mode in place of Away mode
+    - [ ] Add possibility to select Night mode in place of Away mode > Zipato = silent alarm
 1. index.js - Adapt to platform ? >> Version 1.x
 
 ### Further To-do List
