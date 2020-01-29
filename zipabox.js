@@ -320,7 +320,7 @@ class Zipabox{
         armMode = "DISARMED"
       if(armMode == "error")
         reject("No armMode selected. valueInt : "+valueInt);
-      var myBody = '{"armMode" : "'+armMode+'","secureSessionId":"'+this.secureSessionId'"}';
+      var myBody = '{"armMode" : "'+armMode+'","secureSessionId":"'+this.secureSessionId+'"}';
       var myInitPost = {
         method: 'POST',
         body: myBody
@@ -362,7 +362,7 @@ class Zipabox{
     }.bind(this));// End Promise
   }// end setAttributesValueRequest
 
-  
+
 } // End class
 
 
