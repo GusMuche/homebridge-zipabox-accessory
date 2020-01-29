@@ -1,6 +1,6 @@
 {
   "name": "homebridge-zipabox-accessory",
-  "version": "0.13.30",
+  "version": "0.13.31",
   "description": "Homebridge plugin for Zipabox for homebridge : http://github.com/GusMuche/homebridge-zipabox-accessory",
   "license": "MIT",
   "keywords": [

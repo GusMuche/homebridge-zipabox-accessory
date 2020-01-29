@@ -670,7 +670,7 @@ class ZipaAccessory {
         this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState).getValue();
         console.log("Refresh asked");
       }
-    })
+    }.bind(this))
     .catch(function manageError(error) {
       throw new Error(error);
     });
