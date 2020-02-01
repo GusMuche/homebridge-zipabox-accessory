@@ -311,7 +311,7 @@ class ZipaAccessory {
       .on('get', this.getOnSecurityCurrentHandler.bind(this));
       this.service.getCharacteristic(Characteristic.SecuritySystemTargetState)
       .on('set', this.setOnSecurityTargetHandler.bind(this));
-      this.service.getCharacteristic(Characteristic.StatusFault);
+      this.service.getCharacteristic(Characteristic.StatusFault)
       .on('get', this.getOnSecurityStatusFault.bind(this))
       .on('set', this.setOnSecurityStatusFault.bind(this));
     }
@@ -552,8 +552,9 @@ class ZipaAccessory {
          this.debug && this.log("Accessory Value returned by callback:",accessoryValue);
          var returnedValue = accessoryValue;
          if(typeof(returnedValue) != "boolean"){ // Check if returnedValue is a Boolean
-           this.log("Coding error in getOnCharacteristicHandler: returnedValue is not a boolean");
-           throw new Error("Coding error in getOnCharacteristicHandler: returnedValue is not a boolean"));
+           error = new Error("Coding error in getOnCharacteristicHandler: returnedValue is not a boolean");
+           this.log(error);
+           throw error;
          }
          if(this.reverseValue == true){ // User ask to reverse
            if(returnedValue == true){

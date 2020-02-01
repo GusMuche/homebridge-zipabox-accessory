@@ -335,11 +335,11 @@ class Zipabox{
         this.debug && this.log("zoneStatus of Response :",jsonResponse.zoneStatuses);
         this.debug && this.log("of of zoneStatus of Response :",jsonResponse.zoneStatuses.of);
         /* Need to check if not possible */
-        //response.zoneStatuses.of = false
+        //response.zoneStatuses.ok = false
         //response.zoneStatuses.bypassable = false
         //response.zoneStatuses.problem = "WRONG_STATE",
         // Else zonestatuses will be []
-        if(jsonResponse.zoneStatus.of == false or jsonResponse.zoneStatus.of == "false")
+        if(jsonResponse.zoneStatus.ok == false || jsonResponse.zoneStatus.ok == "false")
           resolve(false);
         else
           resolve(true);
