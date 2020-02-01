@@ -7,7 +7,7 @@ The approach is to add multiple accessory and get the base information and actio
 
 The plugin will be adapted to a Platform after programming all the accessory separately (see development route below).
 
-The plugin didn't use the [Zipato API Node.js Implementation](https://github.com/espenmjos/zipato) (no success after a few try) like the [homebridge-zipato](https://github.com/lrozema/homebridge-zipato) plugin. The actual plugin is an alternative with direct connection to [Zipato API] (https://my.zipato.com/zipato-web/api/).
+The plugin didn't use the [Zipato API Node.js Implementation](https://github.com/espenmjos/zipato) (no success after a few try) like the [homebridge-zipato](https://github.com/lrozema/homebridge-zipato) plugin. The actual plugin is an alternative with direct connection to [Zipato API](https://my.zipato.com/zipato-web/api/).
 
 I didn't work with javascript since a few years, so please be comprehensive.
 
@@ -82,6 +82,7 @@ I didn't work with javascript since a few years, so please be comprehensive.
 - [x] Change the refresh rate for each Accessory
 - [x] Explain how to find the UUID
 - [x] Change the name of the package
+- [x] Correction about "success" if not after connection retry
 - [ ] Add a fake switch to reboot the box ?
 - [ ] Rewrite the parameter order to have something more clear and logic (sub division?)
 - [ ] Make a function with reconnect method

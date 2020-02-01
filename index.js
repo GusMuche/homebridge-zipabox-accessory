@@ -234,7 +234,7 @@ class ZipaAccessory {
       }
       if(this.type == "alarm"){
         this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState).getValue();
-        //this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).getValue();
+        this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).getValue(); // TODO : No need for status polling ?
       }
       this.statusPolling();
     }.bind(this),this.timePolling)// end function of timeout
@@ -311,6 +311,9 @@ class ZipaAccessory {
       .on('get', this.getOnSecurityCurrentHandler.bind(this));
       this.service.getCharacteristic(Characteristic.SecuritySystemTargetState)
       .on('set', this.setOnSecurityTargetHandler.bind(this));
+      this.service.getCharacteristic(Characteristic.StatusFault);
+      .on('get', this.getOnSecurityStatusFault.bind(this))
+      .on('set', this.setOnSecurityStatusFault.bind(this));
     }
     if(this.batteryLimit != 0){
       this.service.getCharacteristic(Characteristic.StatusLowBattery) // Normal = 0, Low = 1
@@ -340,7 +343,7 @@ class ZipaAccessory {
         /* Try to reconnect the Box */
         return this.connectTheBox()
         .then(function checkStatus(connectionAnswer){
-          if(connectionAnswer != "success"){
+          if(connectionAnswer != "success"){ //// SUCCESS ????
             this.log("Reconnection failed. Error :",error)
             throw error;
             //return ("testErrorChaining"); // For test with chaining after error
@@ -511,15 +514,18 @@ class ZipaAccessory {
            this.log("Found Unauthorized error > need reconnection : ", "-"+ error.message + "-");
            /* Try to reconnect the Box */
            return this.connectTheBox()
-           .then(function checkStatus(connectionAnswer){
-             if(connectionAnswer != "success"){
-               this.log("Reconnection failed. Error :",error)
-               throw error;
-               //return ("testErrorChaining"); // For test with chaining after error
-             }else{
+           .catch(function manageError(error){
+         	    throw new Error(error);
+           })
+           .then(function checkStatus(){// Checkstatus didn't return a string but only UUID of attribute or device // connectionAnswer){
+             // if(connectionAnswer != "success"){
+             //   this.log("Reconnection failed. Error :",error)
+             //   throw error;
+             //   //return ("testErrorChaining"); // For test with chaining after error
+             // }else{
                this.debug && this.log("Reconnection success > get Device Status");
                return this.zipabox.getDeviceStatus(this.deviceUUID,this.noStatus); // regive the status
-             }
+             //}
            }.bind(this)) // End Unauthorized error manage
            .catch(function manageError(error){
          	    throw new Error(error);
@@ -545,6 +551,10 @@ class ZipaAccessory {
          // Reverse the value if requested by the configuration
          this.debug && this.log("Accessory Value returned by callback:",accessoryValue);
          var returnedValue = accessoryValue;
+         if(typeof(returnedValue) != "boolean"){ // Check if returnedValue is a Boolean
+           this.log("Coding error in getOnCharacteristicHandler: returnedValue is not a boolean");
+           throw new Error("Coding error in getOnCharacteristicHandler: returnedValue is not a boolean"));
+         }
          if(this.reverseValue == true){ // User ask to reverse
            if(returnedValue == true){
              returnedValue = false;
@@ -557,7 +567,7 @@ class ZipaAccessory {
            this.debug && this.log("Window or Door found in get Method. returnedValue :",returnedValue)
            if(returnedValue)
             returnedValue = 100;
-          else
+           else
             returnedValue = 0;
          }
          callback(error,returnedValue);
@@ -599,7 +609,7 @@ class ZipaAccessory {
            */
            if(returnedValue == 0)
             returnedValue = 1;
-          else
+           else
             returnedValue = 0;
          }
          callback(error,returnedValue);
@@ -629,15 +639,15 @@ class ZipaAccessory {
            this.log("Found Unauthorized error in security Status > need reconnection : ", "-"+ errorConnection.message + "-");
            /* Try to reconnect the Box */
            return this.connectTheBox()
-           .then(function checkStatus(connectionAnswer){
-             if(connectionAnswer != "success"){
-               this.log("Reconnection failed. Error :",error)
-               throw error;
-               //return ("testErrorChaining"); // For test with chaining after error
-             }else{
-               this.debug && this.log("Reconnection success > getOnSecurityCurrentHandler");
-               return this.zipabox.getSecurityStatus(this.uuid); // regive the security value
-             }
+           .then(function checkStatus(){// Checkstatus didn't return a string but only UUID of attribute or device // connectionAnswer){
+             // if(connectionAnswer != "success"){
+             //   this.log("Reconnection failed. Error :",error)
+             //   throw error;
+             //   //return ("testErrorChaining"); // For test with chaining after error
+             // }else{
+               this.debug && this.log("Reconnection success > get Device Status");
+               return this.zipabox.getDeviceStatus(this.deviceUUID,this.noStatus); // regive the status
+             //}
            }.bind(this)) // End Unauthorized error manage
            .catch(function manageError(error){
          	    throw new Error(error);
@@ -660,8 +670,11 @@ class ZipaAccessory {
     this.debug && this.log('calling setOnCharacteristicHandler', value);
 
     this.zipabox.putSecuritySystem(this.uuid,value)
-    .then(function launchCallBack(resp){
-      //console.log("launchCallBack :",resp); // TODO: delete
+    .catch(function notReadyError(error){
+
+    })
+    .then(function launchCallBack(resp){  // TODO : besoin de ce bloc ???
+      console.log("launchCallBack in setOnSecurityTargetHandler :",resp); // TODO: delete
       callback(resp); // TODO : check if ok
     })
     .then(function recheckStatusIfNoRefresh(){
@@ -671,5 +684,18 @@ class ZipaAccessory {
     .catch(function manageError(error) {
       throw new Error(error);
     });
-  }
+  } // Fin methode setOnSecurityTargetHandler
+
+  setOnSecurityStatusFault (value, callback){
+    /* Log to the console the value whenever this function is called */
+    this.debug && this.log('calling setOnSecurityStatusFault', value);
+
+  } // fin méthode setOnSecurityStatusFault
+
+  getOnSecurityStatusFault (callback){ // Will return if
+    /* Log to the console the value whenever this function is called */
+    this.debug && this.log('calling getOnSecurityStatusFault');
+
+  } // fin méthode getOnSecurityStatusFault
+
 } // end Class
