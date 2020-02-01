@@ -329,17 +329,19 @@ class Zipabox{
       this.debug && this.log("URL:",this.baseURL + 'alarm/partitions/' + uuidPartition + '/setMode');
       fetch(this.baseURL + 'alarm/partitions/' + uuidPartition + '/setMode',myInitPost)
       .then(fstatus)
-      .then(fjson)
-      .then(function giveResponse(jsonResponse){
+      //.then(fjson)
+      .then(function giveResponse(response){
+        this.debug && this.log("Response of POST : ",response);
+        var jsonResponse = response.json();
         this.debug && this.log("Response of POST : ",jsonResponse);
         this.debug && this.log("zoneStatus of Response :",jsonResponse.zoneStatuses);
-        this.debug && this.log("of of zoneStatus of Response :",jsonResponse.zoneStatuses.of);
+        this.debug && this.log("ok of zoneStatuses of Response :",jsonResponse.zoneStatuses.ok);
         /* Need to check if not possible */
         //response.zoneStatuses.ok = false
         //response.zoneStatuses.bypassable = false
         //response.zoneStatuses.problem = "WRONG_STATE",
         // Else zonestatuses will be []
-        if(jsonResponse.zoneStatus.ok == false || jsonResponse.zoneStatus.ok == "false")
+        if(jsonResponse.zoneStatuses.ok == false || jsonResponse.zoneStatuses.ok == "false")
           resolve(false);
         else
           resolve(true);
