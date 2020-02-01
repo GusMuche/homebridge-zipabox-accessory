@@ -670,16 +670,15 @@ class ZipaAccessory {
     this.debug && this.log('calling setOnCharacteristicHandler', value);
 
     this.zipabox.putSecuritySystem(this.uuid,value)
-    .catch(function notReadyError(error){
-
-    })
-    .then(function launchCallBack(resp){  // TODO : besoin de ce bloc ???
-      console.log("launchCallBack in setOnSecurityTargetHandler :",resp); // TODO: delete
-      callback(resp); // TODO : check if ok
-    })
-    .then(function recheckStatusIfNoRefresh(){
+    .then(function checkIfTrue(putBooleanResponse){
+      if(putBooleanResponse == false){ // The Box have return an issue in arming the Security System
+        error = new Error("Alarm is not ready to arm.");
+        this.log(error);
+        callback(error,undefined);
+      }
       if(this.timePolling == 0) // User has no request to check alarm refresh > force get Status after change
         this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState).getValue();
+      callback(resp);
     }.bind(this))
     .catch(function manageError(error) {
       throw new Error(error);

@@ -129,11 +129,11 @@ class Zipabox{
       .then(fstatus)
       .then(fjson)
       .then(function giveResult(jsonReponse){
-        console.log("Result connectSecurity",jsonReponse);
-        console.log("Request to the connectSecurity : ",jsonReponse.success);
-        console.log("Connection to the connectSecurity : ",jsonReponse.response.success);
+        this.debug && this.log("Result connectSecurity",jsonReponse);
+        this.debug && this.log("Request to the connectSecurity : ",jsonReponse.success);
+        this.debug && this.log("Connection to the connectSecurity : ",jsonReponse.response.success);
         resolve(jsonReponse.success);
-      })
+      }.bind(this))
       .catch(function manageError(error) {
         reject(error);
       });// end fetch chaining
@@ -152,8 +152,8 @@ class Zipabox{
       .then(fstatus)
       .then(fjson)
       .then(function giveDeviceUUID(jsonResponse){
-        console.log("Response of getDeviceUUID. UUID source :", attributeUUID);
-        console.log("Device UUID : ",jsonResponse.device.uuid);
+        this.debug && this.log("Response of getDeviceUUID. UUID source :", attributeUUID);
+        this.debug && this.log("Device UUID : ",jsonResponse.device.uuid);
         resolve(jsonResponse.device.uuid);
       }.bind(this))
       .catch(function manageError(error) {
@@ -329,10 +329,21 @@ class Zipabox{
       this.debug && this.log("URL:",this.baseURL + 'alarm/partitions/' + uuidPartition + '/setMode');
       fetch(this.baseURL + 'alarm/partitions/' + uuidPartition + '/setMode',myInitPost)
       .then(fstatus)
-      .then(function giveResponse(response){
-        console.log("Response of POST : ",response)
-        resolve(null);
-      })
+      .then(fjson)
+      .then(function giveResponse(jsonResponse){
+        this.debug && this.log("Response of POST : ",jsonResponse);
+        this.debug && this.log("zoneStatus of Response :",jsonResponse.zoneStatuses);
+        this.debug && this.log("of of zoneStatus of Response :",jsonResponse.zoneStatuses.of);
+        /* Need to check if not possible */
+        //response.zoneStatuses.of = false
+        //response.zoneStatuses.bypassable = false
+        //response.zoneStatuses.problem = "WRONG_STATE",
+        // Else zonestatuses will be []
+        if(jsonResponse.zoneStatus.of == false or jsonResponse.zoneStatus.of == "false")
+          resolve(false);
+        else
+          resolve(true);
+      }.bind(this))
       .catch(function manageError(error) {
         console.log('Error occurred!', error);// TODO ADD gestion Error
         reject(error);
