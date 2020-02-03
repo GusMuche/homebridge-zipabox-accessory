@@ -68,7 +68,9 @@ I didn't work with javascript since a few years, so please be comprehensive.
     - [x] Add method to set the mode
     - [x] Manage return if No connection successfull > StatusFault
     - [x] Add (or no) the SecuritySystemAlarmType > no need for it
-    - [ ] Add possibility to select Night mode in place of Away mode > Zipato = silent alarm
+    - [x] Add possibility to select Night mode in place of Away mode > Zipato = silent alarm
+    - [x] Check first status at startup
+    - [ ] Manage Home if Night selected 
 1. index.js - Adapt to platform ? >> Version 1.x
 
 ### Further To-do List
@@ -164,6 +166,7 @@ batteryLimit | (Optional) Level (in percent 1 to 100) to launch the BatteryLow<b
 noStatus | (Optional) = true if no Status (is connected) option is available for<br>the device - false in default - see below-
 reverse | (Optional) = true if the boolean signal of the sensor need to be<br>reversed - see below
 pin | (Optional) : your Pin in Zipato Board to arm or disarm alarm.
+nightMode | (Optional) : Select Home or Night for Security system
 
 ## List of implemented function
 Device              | type        | Methods
@@ -180,7 +183,7 @@ Door                | door        | Current Position (0 or 100 %) - Unavailable
 Leak Sensor         | leak        | Get Value - Battery Low Status - Unavailable
 Battery             | battery     | Battery Level - Status - Unavailable
 Carbon Monoxide     | co          | Carbon Detected - Battery Low Status - Unavailable
-Security System     | alarm       | Ongoing...
+Security System     | alarm       | Get Value - Set Value - Not ready - Night or Home
 
 ## Remarks
 
@@ -211,8 +214,14 @@ This option is fixed to true by the plugin for an alarm type.
 HomeKit update the status of your device when you reopen the Home APP. If you want to force a refresh you can use the optional parameter "refresh".
 You do not need this to keep the connection to the Box. The plugin will reconnect if need after a long time without connection.
 
+## Alarm - Security system
+
 ### Alarm configuration
 To configure an alarm, you must specify the UUID of the partition that you want to follow (not the device or sensor). Also the pin of the user logged in ist necessary to permit access to change the alarm (see next point).
 
 ### Pin missing for Alarm
 In case of missing PIN parameter for a Alarm accessory, the plugin send a log warning, change the type to "switch" and add an info in the name.
+
+### Select night or home status
+Homekit can return "Night" status or "Home" status for an "Perimeter only alarm". Zipato can only have one of the both. To choose if the homebridge should return Night or Home, the user has to select nightMode = true if the system has to return Night.
+Home mode is selected has default.

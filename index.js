@@ -65,11 +65,17 @@ class ZipaAccessory {
     /* Optional reverse Value */
     this.reverseValue = config["reverse"] || false;
     if(this.reverseValue != false && this.reverseValue != true){
-      this.debug && this.log("Configuration error : reverse fixed to false");
+      this.log("Configuration error : reverse fixed to false");
       this.reverseValue = false;
     }
     if(this.type == "alarm")
       this.reverseValue = false;
+    /* Optional nightMode alarm */
+    this.nightMode = config["nightMode"] || false;
+    if(this.nightMode != false && this.nightMode != true){
+      this.log("Configuration error : nightMode fixed to false");
+      this.nightMode = false;
+    }
     /* PIN for alarm accessory */
     this.pin = config["pin"] || "noPIN";
     if(this.pin != "noPin")
@@ -91,8 +97,8 @@ class ZipaAccessory {
     /* Create and connect to the Box */
     this.zipabox = new Zipabox(this.debug,this.baseURL,this.log,config["USERNAME"],config["PASSWORD"]); // tentative de créer la box
     this.connectTheBox();
-    if(this.timePolling > 0)
-      this.statusPolling();
+    // if(this.timePolling > 0) //FIXME delete if change to connectmethod is ok
+    //   this.statusPolling();
 
     /*
     * A HomeKit accessory can have many "services". This will create our base service,
@@ -205,11 +211,15 @@ class ZipaAccessory {
         return deviceUUID; // same for previous Promise without alarm
       }
     }.bind(this))
+    .then(function statusPollingStartIfNeeded(none){
+      if(this.timePolling > 0) //FIXME delete if change to connectmethod is ok
+        this.statusPolling();
+    }.bind(this))
     .catch(function manageError(error) {
       this.log("Error on connectBox : ",error);
 	    throw new Error(error);
     }.bind(this));
-  } // and connectTheBox function
+  } // end connectTheBox function
 
   statusPolling(){
     this.debug && this.log("Forced refresh after (seconds):",this.timePolling);
@@ -640,7 +650,7 @@ class ZipaAccessory {
        // }
 
        var error = null;
-       this.zipabox.getSecurityStatus(this.uuid)
+       this.zipabox.getSecurityStatus(this.uuid,this.nightMode)
        .catch(function manageReconnection(errorConnection){
          if (errorConnection.message == "Unauthorized" || errorConnection.message == "Unauthorized "){ // || error.message == "Bad Request " > for test
            this.log("Found Unauthorized error in security Status > need reconnection : ", "-"+ errorConnection.message + "-");

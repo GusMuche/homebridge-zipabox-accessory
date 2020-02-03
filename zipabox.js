@@ -47,7 +47,7 @@ class Zipabox{
         });//end promise
       })// end function fgetNonce
       .then(function resolveTheNonce(nonce){
-        console.log("Resolve the Nonce",nonce)
+        //console.log("Resolve the Nonce",nonce)
         resolve(nonce);
       })
       .catch(function manageError(error) {
@@ -246,7 +246,7 @@ class Zipabox{
     }.bind(this));// End Promise
   }// End getAttributesValue
 
-  getSecurityStatus(uuidPartition){
+  getSecurityStatus(uuidPartition,nightMode){
     /* SecuritySystemCurrentState Property - enum of Int in Homebridge :
     STAY_ARM = 0; > Armée présent
     AWAY_ARM = 1; > Armée absent
@@ -264,7 +264,7 @@ class Zipabox{
     */
     return new Promise(function(resolve,reject){
       this.debug && this.log("Method getSecurityStatus()");
-      this.debg && this.log("getSecurityStatus request : ",this.baseURL + "alarm/partitions/" + uuidPartition + "?alarm=false&zones=false&control=false&attributes=false&config=false&state=true&full=false");
+      this.debug && this.log("getSecurityStatus request : ",this.baseURL + "alarm/partitions/" + uuidPartition + "?alarm=false&zones=false&control=false&attributes=false&config=false&state=true&full=false");
       fetch(this.baseURL + "alarm/partitions/" + uuidPartition + "?alarm=false&zones=false&control=false&attributes=false&config=false&state=true&full=false",myInitGet)
       .then(fstatus)
       .then(fjson)
@@ -281,8 +281,12 @@ class Zipabox{
         // reject(err);
         if(tripped == true)
           resolve(4);
-        if(armMode == "HOME")
-          resolve(0); // STAY_ARM
+        if(armMode == "HOME"){
+          if(nightMode)
+            resolve(2); // NIGHT_ARM
+          else
+            resolve(0); // STAY_ARM
+        }
         if(armMode == "AWAY")
           resolve(1); // AWAY_ARM
         if(armMode == "DISARMED")
@@ -312,9 +316,9 @@ class Zipabox{
         reject("No secureSessionId saved in Object !");
       // Translate armMode from INT of HomeKit to String for Zipato
       var armMode = "error";
-      if(valueInt == 0)
+      if(valueInt == 0 || valueInt == 2)
         armMode = "HOME";
-      if(valueInt == 1 || valueInt == 2)
+      if(valueInt == 1)
         armMode = "AWAY";
       if(valueInt == 3)
         armMode = "DISARMED"
@@ -398,7 +402,7 @@ class Zipabox{
 /* Functions used with fetch. f____ */
 function fstatus(response){
   return new Promise(function(resolve,reject){
-    console.log("In fstatus", response.status);
+    //console.log("In fstatus", response.status);
     // Check the status
     if (response.status >= 200 && response.status < 300) {
       // Go to the next point
