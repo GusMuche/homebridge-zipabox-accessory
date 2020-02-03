@@ -66,8 +66,8 @@ I didn't work with javascript since a few years, so please be comprehensive.
     - [x] Add resync if missing connection > need test
     - [x] Add Async method to get System status
     - [x] Add method to set the mode
-    - [ ] Manage return if No connection successfull > StatusTampered or StatusFault
-    - [ ] Add (or no) the SecuritySystemAlarmType
+    - [x] Manage return if No connection successfull > StatusFault
+    - [x] Add (or no) the SecuritySystemAlarmType > no need for it
     - [ ] Add possibility to select Night mode in place of Away mode > Zipato = silent alarm
 1. index.js - Adapt to platform ? >> Version 1.x
 
@@ -84,6 +84,7 @@ I didn't work with javascript since a few years, so please be comprehensive.
 - [x] Change the name of the package
 - [x] Correction about "success" if not after connection retry
 - [ ] Add a fake switch to reboot the box ?
+- [ ] Force an online method with the use of StatusFault
 - [ ] Rewrite the parameter order to have something more clear and logic (sub division?)
 - [ ] Make a function with reconnect method
 - [ ] Bind with a graph viewer (like fakegato)

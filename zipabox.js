@@ -108,28 +108,28 @@ class Zipabox{
     // Request the connection
     return new Promise(function(resolve,reject){
       this.debug && this.log("Methode connectSecurity()");
-      this.debug && this.log("secureSessionId for connectSecurity :",secureSessionId);
-      this.debug && this.log("Nonce for connectSecurity :",nonce);
-      this.debug && this.log("Salt for connectSecurity :",salt);
-      // Calculate saltPin
+      //this.debug && this.log("secureSessionId for connectSecurity :",secureSessionId);
+      //this.debug && this.log("Nonce for connectSecurity :",nonce);
+      //this.debug && this.log("Salt for connectSecurity :",salt);
+      /* Calculate saltPin */
       if(pin == "noPIN")
         reject("No Pin specified - Connection to security not possible.")
       var saltPin = salt + pin;
       this.debug && this.log("saltPin :" + saltPin);
-      // Calculate the token
+      /* Calculate the token */
       var saltPinHash = crypto.createHash('sha1').update(saltPin).digest('hex');
       this.debug && this.log("saltPinHash :" + saltPinHash);
       var token = crypto.createHash('sha1').update(nonce + saltPinHash).digest('hex');
       this.debug && this.log("Token :" + token);
       this.debug && this.log("URL pour connectSecurity: " + this.baseURL +'security/session/login/'+secureSessionId+'?token='+token);
-      // Save secureSessionId for use in putSecuritySystem
+      /* Save secureSessionId for use in putSecuritySystem */
       this.secureSessionId = secureSessionId;
-      // Connect the Security
+      /* Connect the Security */
       fetch(this.baseURL +'security/session/login/'+secureSessionId+'?token='+token,myInitGet)
       .then(fstatus)
       .then(fjson)
       .then(function giveResult(jsonReponse){
-        this.debug && this.log("Result connectSecurity",jsonReponse);
+        //this.debug && this.log("Result connectSecurity",jsonReponse);
         this.debug && this.log("Request to the connectSecurity : ",jsonReponse.success);
         this.debug && this.log("Connection to the connectSecurity : ",jsonReponse.response.success);
         resolve(jsonReponse.success);
@@ -325,26 +325,42 @@ class Zipabox{
         method: 'POST',
         body: myBody
       }
-      this.debug && this.log("myInitPost:",myInitPost);
+      //this.debug && this.log("myInitPost:",myInitPost);
       this.debug && this.log("URL:",this.baseURL + 'alarm/partitions/' + uuidPartition + '/setMode');
       fetch(this.baseURL + 'alarm/partitions/' + uuidPartition + '/setMode',myInitPost)
       .then(fstatus)
-      //.then(fjson)
-      .then(function giveResponse(response){
-        this.debug && this.log("Response of POST : ",response);
-        var jsonResponse = response.json();
+      .then(fjson)
+      .then(function giveResponse(jsonResponse){
         this.debug && this.log("Response of POST : ",jsonResponse);
+        this.debug && this.log("success of Response :",jsonResponse.success);
+        this.debug && this.log("type of success of Response :",typeof(jsonResponse.success));
         this.debug && this.log("zoneStatus of Response :",jsonResponse.zoneStatuses);
-        this.debug && this.log("ok of zoneStatuses of Response :",jsonResponse.zoneStatuses.ok);
-        /* Need to check if not possible */
-        //response.zoneStatuses.ok = false
-        //response.zoneStatuses.bypassable = false
-        //response.zoneStatuses.problem = "WRONG_STATE",
-        // Else zonestatuses will be []
-        if(jsonResponse.zoneStatuses.ok == false || jsonResponse.zoneStatuses.ok == "false")
-          resolve(false);
-        else
-          resolve(true);
+        //this.debug && this.log("is ok undefined :",jsonResponse.zoneStatuses[0] === undefined);
+        //this.debug && this.log("ok of zoneStatuses of Response :",jsonResponse.zoneStatuses[0].ok);
+        //this.debug && this.log("type of ok of zoneStatuses of Response :",typeof(jsonResponse.zoneStatuses[0].ok));
+        /* Manage and success error */
+        if (jsonResponse.success == false){
+          this.debug && this.log("Post method error : success false is returned");
+          reject("Post method error : success false is returned");
+        }else{
+          /* Manage the return if all go corretly
+          response.zoneStatuses = []*/
+          if(jsonResponse.success == true && jsonResponse.zoneStatuses[0] === undefined){
+            this.debug && this.log("No bad return in zoneStatuses > resolve true");
+            resolve(true);
+          }else{
+            /* Manage the return if not possible to change state : response will be
+            response.zoneStatuses.ok = false
+            response.zoneStatuses.bypassable = false
+            response.zoneStatuses.problem = "WRONG_STATE" */
+            if(jsonResponse.zoneStatuses[0].ok == false){
+              resolve(false);
+            }else{
+              this.debug && this.log("ERROR : bad return of Post Security Method");
+              reject("Bad return of Post method");
+            }
+          }
+        }
       }.bind(this))
       .catch(function manageError(error) {
         console.log('Error occurred!', error);// TODO ADD gestion Error

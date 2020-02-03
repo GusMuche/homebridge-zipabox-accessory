@@ -86,6 +86,7 @@ class ZipaAccessory {
     /* Empty datas */
     this.deviceUUID = null; // will be fixe after connection TODO : to keep or not ?
     this.timeOut = null; // will be launch after connection
+    this.statusFault = null; // will fixed for an alarm
 
     /* Create and connect to the Box */
     this.zipabox = new Zipabox(this.debug,this.baseURL,this.log,config["USERNAME"],config["PASSWORD"]); // tentative de créer la box
@@ -151,6 +152,10 @@ class ZipaAccessory {
       case "alarm":
         this.debug && this.log("Add a Security System Accessory");
         this.service = new Service.SecuritySystem(this.name);
+        /* StatusFault option :
+        NO_FAULT = 0;
+        GENERAL_FAULT = 1;*/
+        this.statusFault = 0;
         break;
       default:
         this.debug && this.log("Add a default Switch Accessory");
@@ -234,7 +239,8 @@ class ZipaAccessory {
       }
       if(this.type == "alarm"){
         this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState).getValue();
-        this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).getValue(); // TODO : No need for status polling ?
+        this.service.getCharacteristic(Characteristic.StatusFault).getValue();
+        //this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).getValue(); // TODO : No need for status polling ?
       }
       this.statusPolling();
     }.bind(this),this.timePolling)// end function of timeout
@@ -312,8 +318,8 @@ class ZipaAccessory {
       this.service.getCharacteristic(Characteristic.SecuritySystemTargetState)
       .on('set', this.setOnSecurityTargetHandler.bind(this));
       this.service.getCharacteristic(Characteristic.StatusFault)
-      .on('get', this.getOnSecurityStatusFault.bind(this))
-      .on('set', this.setOnSecurityStatusFault.bind(this));
+      .on('get', this.getOnSecurityStatusFault.bind(this));
+      //.on('set', this.setOnSecurityStatusFault.bind(this));
     }
     if(this.batteryLimit != 0){
       this.service.getCharacteristic(Characteristic.StatusLowBattery) // Normal = 0, Low = 1
@@ -656,6 +662,7 @@ class ZipaAccessory {
          }
        }.bind(this))
        .then(function manageCallback(securityCurrentState){
+         this.service.getCharacteristic(Characteristic.StatusFault).getValue();
          callback(error,securityCurrentState);
        }.bind(this))
        .catch(function manageError(error){
@@ -672,30 +679,36 @@ class ZipaAccessory {
 
     this.zipabox.putSecuritySystem(this.uuid,value)
     .then(function checkIfTrue(putBooleanResponse){
+      this.debug && this.log("return of putBooleanResponse :",putBooleanResponse);
+      this.debug && this.log("type of putBooleanResponse :",typeof(putBooleanResponse));
       if(putBooleanResponse == false){ // The Box have return an issue in arming the Security System
-        error = new Error("Alarm is not ready to arm.");
+        var error = new Error("Alarm is not ready to arm. StatusFault set to false");
+        this.statusFault = 1;
+        this.service.getCharacteristic(Characteristic.StatusFault).getValue();
         this.log(error);
         callback(error,undefined);
-      }
-      if(this.timePolling == 0) // User has no request to check alarm refresh > force get Status after change
+      }else{
+        //if(this.timePolling == 0) // User has no request to check alarm refresh > force get Status after change TODO : do we need this additional test ?
+        this.statusFault = 0;
         this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState).getValue();
-      callback(resp);
+        callback(null);
+      }
     }.bind(this))
-    .catch(function manageError(error) {
-      throw new Error(error);
+    .catch(function manageError() {
+      throw new Error("Undefined error in setOnSecurityTargetHandler");
     });
   } // Fin methode setOnSecurityTargetHandler
 
-  setOnSecurityStatusFault (value, callback){
-    /* Log to the console the value whenever this function is called */
-    this.debug && this.log('calling setOnSecurityStatusFault', value);
+  // setOnSecurityStatusFault (value, callback){
+  //   /* Log to the console the value whenever this function is called */
+  //   this.debug && this.log('calling setOnSecurityStatusFault', value);
+  //
+  // } // fin méthode setOnSecurityStatusFault
 
-  } // fin méthode setOnSecurityStatusFault
-
-  getOnSecurityStatusFault (callback){ // Will return if
+  getOnSecurityStatusFault (callback){
     /* Log to the console the value whenever this function is called */
     this.debug && this.log('calling getOnSecurityStatusFault');
-
+    callback(null,this.statusFault);
   } // fin méthode getOnSecurityStatusFault
 
 } // end Class
