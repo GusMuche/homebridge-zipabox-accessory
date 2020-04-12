@@ -1,3 +1,5 @@
+No more maintained. See homebridge-zipabox-platform
+
 This is a Plugin for [Homebridge](https://github.com/nfarina/homebridge) link to the ZipaBox.
 It is just published to test on local access to a ZipaBox (Zipato TM) through the API possibilities.
 
